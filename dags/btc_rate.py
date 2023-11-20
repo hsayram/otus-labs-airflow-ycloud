@@ -27,7 +27,7 @@ def get_btc_rate(**kwargs):
 
         btc_rate = response.json()['data']['rateUsd']
         kwargs['ti'].xcom_push(key='btc_rate', value=btc_rate)
-        kwargs['ti'].xcom_push(key='datetime', value=datetime.utcnow())
+        kwargs['ti'].xcom_push(key='datetime', value=datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))
     except requests.exceptions.RequestException as e:
         print(f"Error fetching BTC rate: {e}")
 
@@ -48,8 +48,8 @@ create_table_task = PostgresOperator(
 write_to_table_task = PostgresOperator(
     task_id='write_to_table',
     postgres_conn_id='postgres_otus',
-    sql='INSERT INTO btc_rate (datetime, btc_rate) VALUES ({{ task_instance.xcom_pull(task_ids="get_btc_rate", key="datetime") }}, {{ task_instance.xcom_pull(task_ids="get_btc_rate", key="btc_rate") }});',
-    dag=dag,
+    sql='''INSERT INTO btc_rate (datetime, btc_rate) VALUES ('{{ task_instance.xcom_pull(task_ids="get_btc_rate", key="datetime") }}', '{{ task_instance.xcom_pull(task_ids="get_btc_rate", key="btc_rate") }}');''',
+     dag=dag,
 )
 
 get_btc_rate_task >> create_table_task >> write_to_table_task
