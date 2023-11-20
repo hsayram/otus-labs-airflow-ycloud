@@ -27,7 +27,7 @@ def get_btc_rate(**kwargs):
 
         btc_rate = response.json()['data']['rateUsd']
         kwargs['ti'].xcom_push(key='btc_rate', value=btc_rate)
-        kwargs['ti'].xcom_push(key='datetime', value=datetime.utcnow().isoformat())
+        kwargs['ti'].xcom_push(key='datetime', value=datetime.utcnow())
     except requests.exceptions.RequestException as e:
         print(f"Error fetching BTC rate: {e}")
 
